@@ -190,12 +190,23 @@
         // 正解の色を含む選択肢を生成する関数
         function generateChoices(correctColor) {
             let choices = [correctColor];
-            while (choices.length < 4) {
+            let attempts = 0; // 試行回数をカウント
+            let minDifference = 100; // 最小の色差の初期値
+            while (choices.length < selects && minDifference > 0) {
+                attempts++; // 試行回数をインクリメント
                 let newColor = getRandomHexColor();
                 // 既存の選択肢と十分に異なる色のみ追加
-                if (!choices.some(existingColor => colorDifference(existingColor, newColor) < 100)) {
+                if (!choices.some(existingColor => colorDifference(existingColor, newColor) < minDifference)) {
                     choices.push(newColor);
                 }
+                // 試行回数が一定以上になったら閾値を緩和
+                if (attempts % 200 === 0) { // 200回ごとに閾値を緩和
+                    minDifference = Math.max(minDifference - 10, 0); // 最小値は0まで
+                    console.warn(`Min difference relaxed to ${minDifference} after ${attempts} attempts.`);
+                }
+            }
+            if (minDifference <= 0) {
+                console.error(`Maximum attempts reached while generating choices at ${attempts} with ${choices.length}.`);
             }
             return choices.sort(() => Math.random() - 0.5); // ランダムに並び替え
         }
@@ -204,10 +215,10 @@
         let currentHexColor = "#FFFFFF"; // 現在のHEXカラーコードを保持
         let currentFormat = "hex"; // 現在の表示形式 ("hex", "spacedHex", "rgb")
         let isTitleExpanded = false; // タイトルが拡大されているかどうかを判定するフラグ
+        let selects = 4; // 選択肢の数
 
         // 新しい問題を設定する関数 (View Transitions APIを使用)
         function setNewQuestion(mode = "") {
-            console.log("setNewQuestion called with mode:", mode); // デバッグ用ログ
             if (!document.startViewTransition) {
                 // View Transitions APIがサポートされていない場合は従来の方法を使用
                 applyNewQuestion(mode);
@@ -222,7 +233,6 @@
 
         // 新しい問題を設定するロジック
         function applyNewQuestion(mode) {
-            console.log("applyNewQuestion called with mode:", mode); // デバッグ用ログ
             isAnswered = false; // 正解フラグをリセット
             const hexCodeElement = document.getElementById("hex-code");
             const choicesContainer = document.querySelector(".choices");
@@ -230,9 +240,7 @@
 
             if (mode === "load") {
                 delay = 0; // アニメーションなしの場合は遅延なし
-                console.log("load");
             }
-            console.log(delay);
             // フェードアウトアニメーションを適用
             hexCodeElement.style.animation = `fadeOutRight ${delay}ms forwards`;
             choicesContainer.style.animation = `fadeOut ${delay}ms forwards`;
@@ -417,6 +425,11 @@
         // ページ読み込み時に新しい問題を設定
         window.onload = () => {
             setNewQuestion("load");
+            let url = new URL(window.location.href);
+            let params = url.searchParams;
+            if (params.has('selects')) {
+                selects = params.get('selects');
+            }
             document.getElementById("hex-code").addEventListener("click", toggleHexCodeFormat);
             document.getElementById("title").addEventListener("click", toggleTitleSize); // タイトルにイベントを追加
         };
