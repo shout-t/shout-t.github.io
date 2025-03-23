@@ -245,9 +245,10 @@
                 hexCodeElement.textContent = currentHexColor; // 新しいHEXコードを表示
                 hexCodeElement.style.color = window.matchMedia("(prefers-color-scheme: dark)").matches ? "#FFFFFF" : "#333";
                 
+                setTimeout(() => {
                 // フェードインアニメーションを適用
                 hexCodeElement.style.animation = `fadeInLeft ${delay}ms forwards`;
-
+                }, 100);
                 // 選択肢の初期化
                 const choicesContainer = document.querySelector(".choices");
                 choicesContainer.style.animation = `fadeOutRight ${delay}ms forwards`;
@@ -265,7 +266,7 @@
                     choicesContainer.appendChild(choiceElement);
                 }
                 choicesContainer.style.animation = "fadeIn 0.5s forwards";
-            }, delay); // フェードアウトアニメーションの時間に合わせる
+            }, delay-100); // フェードアウトアニメーションの時間に合わせる
         }
 
         // HEXカラーコードをRGB形式に変換する関数
