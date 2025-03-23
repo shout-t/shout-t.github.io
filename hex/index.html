@@ -221,6 +221,7 @@
 
             if (selectedColor === correctColor) {
                 isAnswered = true; // 正解済みに設定
+                hexCodeElement.textContent = currentHexColor;
                 hexCodeElement.style.color = correctColor; // 文字色を正解の色に変更
 
                 // すべての選択肢をループしてカラーコードを表示
@@ -254,7 +255,7 @@
             if (currentFormat === "hex") {
                 // "#FFFFFF" → "#FF FF FF"
                 currentFormat = "spacedHex";
-                hexCodeElement.textContent = currentHexColor.replace(/#(..)(..)(..)/, "#$1 $2 $3");
+                hexCodeElement.innerHTML = currentHexColor.replace(/#(..)(..)(..)/, "#<span style='color:#FF0000'>$1</span> <span style='color:#00FF00'>$2</span> <span style='color:#0000FF'>$3</span>");
             } else if (currentFormat === "spacedHex") {
                 // "#FF FF FF" → "rgb(nn, nn, nn)"
                 currentFormat = "rgb";
@@ -262,7 +263,7 @@
                 const r = (bigint >> 16) & 255;
                 const g = (bigint >> 8) & 255;
                 const b = bigint & 255;
-                hexCodeElement.textContent = `rgb(${r}, ${g}, ${b})`;
+                hexCodeElement.innerHTML = `<span style='color:#FF0000'>${r}</span> <span style='color:#00FF00'>${g}</span> <span style='color:#0000FF'>${b}</span>`;
             } else if (currentFormat === "rgb") {
                 // "rgb(nn, nn, nn)" → "#FFFFFF"
                 currentFormat = "hex";
