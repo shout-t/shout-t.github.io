@@ -114,7 +114,7 @@
     <meta name="apple-mobile-web-app-title" content="Hex"> <!-- ホーム画面に表示されるタイトル -->
     <link rel="icon" type="image/jpg" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png"> <!-- ホーム画面アイコン -->
-    <link rel="apple-touch-startup-image" href="icon_t.png"> <!-- 起動時のスプラッシュ画面 -->
+    <link rel="apple-touch-startup-image" href="startup.png"> <!-- 起動時のスプラッシュ画面 -->
     <link rel="manifest" href="manifest.json"> <!-- Webアプリの設定 -->
     <script>
         // ランダムなHEXカラーコードを生成する関数
@@ -154,13 +154,18 @@
         }
 
         let isAnswered = false; // 正解済みかどうかを判定するフラグ
+        let currentHexColor = "#FFFFFF"; // 現在のHEXカラーコードを保持
+        let currentFormat = "hex"; // 現在の表示形式 ("hex", "spacedHex", "rgb")
+        let isTitleExpanded = false; // タイトルが拡大されているかどうかを判定するフラグ
 
         // 新しい問題を設定する関数
         function setNewQuestion() {
             isAnswered = false; // 正解フラグをリセット
-            const correctColor = getRandomHexColor(); // 正解の色を生成
-            document.getElementById("hex-code").textContent = correctColor; // 正解の色を表示
-            document.getElementById("hex-code").style.backgroundColor = "transparent";
+            currentHexColor = getRandomHexColor(); // 新しいHEXカラーコードを生成
+            currentFormat = "hex"; // 表示形式をリセット
+            const hexCodeElement = document.getElementById("hex-code");
+            hexCodeElement.textContent = currentHexColor; // HEXコードを表示
+            hexCodeElement.style.backgroundColor = "transparent";
 
             // カラースキームに応じて文字色を設定
             const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -170,7 +175,7 @@
             const choicesContainer = document.querySelector(".choices");
             choicesContainer.innerHTML = ""; // 既存の選択肢をクリア
 
-            let choices = generateChoices(correctColor); // 選択肢を生成
+            let choices = generateChoices(currentHexColor); // 選択肢を生成
 
             // 新しい選択肢を生成
             for (let i = 0; i < choices.length; i++) {
@@ -178,7 +183,7 @@
                 choiceElement.className = "choice";
                 choiceElement.style.backgroundColor = choices[i];
                 choiceElement.addEventListener("click", function () {
-                    handleChoiceClick(choices[i], correctColor);
+                    handleChoiceClick(choices[i], currentHexColor);
                 });
                 choicesContainer.appendChild(choiceElement);
             }
@@ -242,6 +247,42 @@
             }
         }
 
+        // HEXコードの表示形式を切り替える関数
+        function toggleHexCodeFormat() {
+            const hexCodeElement = document.getElementById("hex-code");
+
+            if (currentFormat === "hex") {
+                // "#FFFFFF" → "#FF FF FF"
+                currentFormat = "spacedHex";
+                hexCodeElement.textContent = currentHexColor.replace(/#(..)(..)(..)/, "#$1 $2 $3");
+            } else if (currentFormat === "spacedHex") {
+                // "#FF FF FF" → "rgb(nn, nn, nn)"
+                currentFormat = "rgb";
+                const bigint = parseInt(currentHexColor.slice(1), 16);
+                const r = (bigint >> 16) & 255;
+                const g = (bigint >> 8) & 255;
+                const b = bigint & 255;
+                hexCodeElement.textContent = `rgb(${r}, ${g}, ${b})`;
+            } else if (currentFormat === "rgb") {
+                // "rgb(nn, nn, nn)" → "#FFFFFF"
+                currentFormat = "hex";
+                hexCodeElement.textContent = currentHexColor;
+            }
+        }
+
+        // タイトルの拡大・縮小を切り替える関数
+        function toggleTitleSize() {
+            const titleElement = document.getElementById("title");
+            if (isTitleExpanded) {
+                titleElement.style.transform = "scale(1)"; // 元のサイズに戻す
+                titleElement.style.transformOrigin = "top left"; // 拡大の基準点を左上に設定
+            } else {
+                titleElement.style.transform = "scale(2)"; // 拡大率を大きくする
+                titleElement.style.transformOrigin = "top left"; // 拡大の基準点を左上に設定
+            }
+            isTitleExpanded = !isTitleExpanded; // フラグを反転
+        }
+
         // サービスワーカーの登録
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js')
@@ -250,7 +291,11 @@
         }
 
         // ページ読み込み時に新しい問題を設定
-        window.onload = setNewQuestion;
+        window.onload = () => {
+            setNewQuestion();
+            document.getElementById("hex-code").addEventListener("click", toggleHexCodeFormat);
+            document.getElementById("title").addEventListener("click", toggleTitleSize); // タイトルにイベントを追加
+        };
     </script>
 </head>
 <body>
