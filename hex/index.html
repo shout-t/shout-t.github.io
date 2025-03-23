@@ -83,14 +83,11 @@
 
         /* 次の問題ボタンのスタイル */
         #next-button {
-            width: 80px; /* ボタンの幅 */
-            height: 80px; /* ボタンの高さ */
+            width: 30px; /* ボタンの幅 */
+            height: 30px; /* ボタンの高さ */
+            padding: 25px;
             border-radius: 50%; /* 円形にする */
             background-color: #007aff; /* ボタンの背景色 */
-            padding-right: 4px;
-            padding-left: 8px;
-            padding-bottom: 5px;
-            padding-top: 0px;
             display: flex; /* フレックスボックスを使用 */
             justify-content: center; /* 水平方向に中央揃え */
             align-items: center; /* 垂直方向に中央揃え */
@@ -365,6 +362,6 @@
     <div class="choices">
         <!-- 選択肢のボタン -->
     </div>
-    <button id="next-button" onclick="setNewQuestion()" aria-label="次の問題を表示">⟳</button> <!-- 次の問題ボタン -->
+    <img src="Refresh.png" id="next-button" onclick="setNewQuestion()" aria-label="次の問題を表示">
 </body>
 </html>
