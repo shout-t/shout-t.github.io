@@ -147,6 +147,14 @@
                 opacity: 1;
             }
         }
+
+        @keyframes shake {
+            0% { transform: translateX(10px); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(2.5px); }
+            75% { transform: translateX(-1.25px); }
+            100% { transform: translateX(0); }
+        }
     </style>
     <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
@@ -342,11 +350,11 @@
                 selectedElement.style.backgroundColor = "transparent"; // 背景色を透明に
                 selectedElement.style.color = hexColor; // テキスト色を選択した色に変更
                 selectedElement.textContent = hexColor; // 選択した色を表示
-                hexCodeElement.style.transform = "translateX(-10px)";
-                setTimeout(() => hexCodeElement.style.transform = "translateX(5px)", 100);
-                setTimeout(() => hexCodeElement.style.transform = "translateX(-2.5px)", 200);
-                setTimeout(() => hexCodeElement.style.transform = "translateX(1.25px)", 300);
-                setTimeout(() => hexCodeElement.style.transform = "translateX(0)", 400);
+                hexCodeElement.style.animation = "shake .5s"; // シェイクアニメーションを適用
+                // アニメーションをリセット
+                setTimeout(() => {
+                    hexCodeElement.style.animation = "none";
+                }, 500); // アニメーションの継続時間と一致させる    
             }
         }
 
