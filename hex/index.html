@@ -206,28 +206,36 @@
         let isTitleExpanded = false; // タイトルが拡大されているかどうかを判定するフラグ
 
         // 新しい問題を設定する関数 (View Transitions APIを使用)
-        function setNewQuestion() {
+        function setNewQuestion(mode = "") {
+            console.log("setNewQuestion called with mode:", mode); // デバッグ用ログ
             if (!document.startViewTransition) {
                 // View Transitions APIがサポートされていない場合は従来の方法を使用
-                applyNewQuestion();
+                applyNewQuestion(mode);
                 return;
             }
 
             // View Transitions APIを使用してトランジションを適用
             document.startViewTransition(() => {
-                applyNewQuestion();
+                applyNewQuestion(mode);
             });
         }
 
         // 新しい問題を設定するロジック
-        function applyNewQuestion() {
+        function applyNewQuestion(mode) {
+            console.log("applyNewQuestion called with mode:", mode); // デバッグ用ログ
             isAnswered = false; // 正解フラグをリセット
             const hexCodeElement = document.getElementById("hex-code");
             const choicesContainer = document.querySelector(".choices");
+            let delay = 500; // フェードアウトアニメーションの時間
 
+            if (mode === "load") {
+                delay = 0; // アニメーションなしの場合は遅延なし
+                console.log("load");
+            }
+            console.log(delay);
             // フェードアウトアニメーションを適用
-            hexCodeElement.style.animation = "fadeOutRight 0.5s forwards";
-            choicesContainer.style.animation = "fadeOut 0.5s forwards";
+            hexCodeElement.style.animation = `fadeOutRight ${delay}ms forwards`;
+            choicesContainer.style.animation = `fadeOut ${delay}ms forwards`;
 
 
             // アニメーション終了後に新しい問題を設定
@@ -238,11 +246,11 @@
                 hexCodeElement.style.color = window.matchMedia("(prefers-color-scheme: dark)").matches ? "#FFFFFF" : "#333";
                 
                 // フェードインアニメーションを適用
-                hexCodeElement.style.animation = "fadeInLeft 0.5s forwards";
+                hexCodeElement.style.animation = `fadeInLeft ${delay}ms forwards`;
 
                 // 選択肢の初期化
                 const choicesContainer = document.querySelector(".choices");
-                choicesContainer.style.animation = "fadeOutRight 0.5s forwards";
+                choicesContainer.style.animation = `fadeOutRight ${delay}ms forwards`;
                 choicesContainer.innerHTML = ""; // 既存の選択肢をクリア
 
                 let choices = generateChoices(currentHexColor); // 選択肢を生成
@@ -257,7 +265,7 @@
                     choicesContainer.appendChild(choiceElement);
                 }
                 choicesContainer.style.animation = "fadeIn 0.5s forwards";
-            }, 500); // フェードアウトアニメーションの時間に合わせる
+            }, delay); // フェードアウトアニメーションの時間に合わせる
         }
 
         // HEXカラーコードをRGB形式に変換する関数
@@ -407,7 +415,7 @@
 
         // ページ読み込み時に新しい問題を設定
         window.onload = () => {
-            setNewQuestion();
+            setNewQuestion("load");
             document.getElementById("hex-code").addEventListener("click", toggleHexCodeFormat);
             document.getElementById("title").addEventListener("click", toggleTitleSize); // タイトルにイベントを追加
         };
