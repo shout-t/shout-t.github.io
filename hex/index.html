@@ -103,6 +103,50 @@
             transform: scale(1.1); /* 拡大 */
             background-color: #005ecb; /* 色を変更 */
         }
+
+        /* フェードアウトアニメーション */
+        @keyframes fadeOutRight {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+
+        /* フェードインアニメーション */
+        @keyframes fadeInLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* フェードアウトアニメーション0 */
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* フェードインアニメーション0 */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
     </style>
     <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
@@ -178,32 +222,42 @@
         // 新しい問題を設定するロジック
         function applyNewQuestion() {
             isAnswered = false; // 正解フラグをリセット
-            currentHexColor = getRandomHexColor(); // 新しいHEXカラーコードを生成
-            currentFormat = "hex"; // 表示形式をリセット
             const hexCodeElement = document.getElementById("hex-code");
-            hexCodeElement.textContent = currentHexColor; // HEXコードを表示
-            hexCodeElement.style.backgroundColor = "transparent";
-
-            // カラースキームに応じて文字色を設定
-            const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            document.getElementById("hex-code").style.color = isDarkMode ? "#FFFFFF" : "#333";
-
-            // 選択肢の初期化
             const choicesContainer = document.querySelector(".choices");
-            choicesContainer.innerHTML = ""; // 既存の選択肢をクリア
 
-            let choices = generateChoices(currentHexColor); // 選択肢を生成
+            // フェードアウトアニメーションを適用
+            hexCodeElement.style.animation = "fadeOutRight 0.5s forwards";
+            choicesContainer.style.animation = "fadeOut 0.5s forwards";
 
-            // 新しい選択肢を生成
-            for (let i = 0; i < choices.length; i++) {
-                const choiceElement = document.createElement("div");
-                choiceElement.className = "choice";
-                choiceElement.style.backgroundColor = choices[i];
-                choiceElement.addEventListener("click", function () {
-                    handleChoiceClick(choices[i], currentHexColor);
-                });
-                choicesContainer.appendChild(choiceElement);
-            }
+
+            // アニメーション終了後に新しい問題を設定
+            setTimeout(() => {
+                currentHexColor = getRandomHexColor(); // 新しいHEXカラーコードを生成
+                currentFormat = "hex"; // 表示形式をリセット
+                hexCodeElement.textContent = currentHexColor; // 新しいHEXコードを表示
+                hexCodeElement.style.color = window.matchMedia("(prefers-color-scheme: dark)").matches ? "#FFFFFF" : "#333";
+                
+                // フェードインアニメーションを適用
+                hexCodeElement.style.animation = "fadeInLeft 0.5s forwards";
+
+                // 選択肢の初期化
+                const choicesContainer = document.querySelector(".choices");
+                choicesContainer.style.animation = "fadeOutRight 0.5s forwards";
+                choicesContainer.innerHTML = ""; // 既存の選択肢をクリア
+
+                let choices = generateChoices(currentHexColor); // 選択肢を生成
+                // 新しい選択肢を生成
+                for (let i = 0; i < choices.length; i++) {
+                    const choiceElement = document.createElement("div");
+                    choiceElement.className = "choice";
+                    choiceElement.style.backgroundColor = choices[i];
+                    choiceElement.addEventListener("click", function () {
+                        handleChoiceClick(choices[i], currentHexColor);
+                    });
+                    choicesContainer.appendChild(choiceElement);
+                }
+                choicesContainer.style.animation = "fadeIn 0.5s forwards";
+            }, 500); // フェードアウトアニメーションの時間に合わせる
         }
 
         // HEXカラーコードをRGB形式に変換する関数
@@ -364,7 +418,7 @@
         <img src="img/icon_t.png" alt="icon" width="40px" height="40px">
         <p style="margin: 0;">Hex</p>
     </div> <!-- タイトル -->
-    <div id="hex-code">#FFFFFF</div> <!-- 正解のHEXコードを表示 -->
+    <div id="hex-code"></div> <!-- 正解のHEXコードを表示 -->
     <div class="choices">
         <!-- 選択肢のボタン -->
     </div>
