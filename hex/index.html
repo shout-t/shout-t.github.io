@@ -40,6 +40,7 @@
             left: 20px; /* 左端からの位置 */
             font-size: 1.5rem;
             font-weight: bold;
+            animation-fill-mode: forwards; /* アニメーション終了後もスタイルを維持 */
         }
 
         /* 正解のHEXコードを表示するエリアのスタイル */
@@ -128,13 +129,30 @@
             }
         }
 
+        @keyframes hexchange {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0;
+                transform: scale(.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         /* フェードアウトアニメーション0 */
         @keyframes fadeOut {
             0% {
                 opacity: 1;
+                transform: scale(1);
             }
             100% {
                 opacity: 0;
+                transform: scale(.9);
             }
         }
 
@@ -142,9 +160,64 @@
         @keyframes fadeIn {
             0% {
                 opacity: 0;
+                transform: scale(.9);
+            }
+            30% {
+                opacity: .5;
+                transform: scale(1.02);
             }
             100% {
                 opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes RefreshButton {
+            0% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            }
+            20% {
+            opacity: 0.9;
+            transform: scale(0.9) rotate(180deg);
+            }
+            50% {
+            opacity: 1;
+            transform: scale(1.1) rotate(360deg);
+            }
+            100% {
+            opacity: 1;
+            transform: scale(1) rotate(360deg);
+            }
+        }
+
+        @keyframes logoBi {
+            0% { 
+                transform: scale(1);
+                transform-origin: top left;
+            }
+            20% {
+                transform: scale(.8);
+                transform-origin : top left;
+            }
+            100% {
+                transform: scale(2);
+                transform-origin : top left;
+            }
+        }
+
+        @keyframes logoSm {
+            0% { 
+                transform: scale(2);
+                transform-origin: top left;
+            }
+            50% {
+                transform: scale(.8);
+                transform-origin : top left;
+            }
+            100% {
+                transform: scale(1);
+                transform-origin : top left;
             }
         }
 
@@ -361,66 +434,50 @@
         // HEXコードの表示形式を切り替える関数 (View Transitions APIを使用)
         function toggleHexCodeFormat() {
             const hexCodeElement = document.getElementById("hex-code");
-
-            if (!document.startViewTransition) {
-                // View Transitions APIがサポートされていない場合は従来の方法を使用
-                applyFormatChange(hexCodeElement);
-                return;
-            }
-
-            // View Transitions APIを使用してトランジションを適用
-            document.startViewTransition(() => {
-                applyFormatChange(hexCodeElement);
-            });
+            hexCodeElement.style.animation = "hexchange .5s";
+            setTimeout(() => {
+                if (currentFormat === "hex") {
+                    // "#FFFFFF" → "#FF FF FF"
+                    currentFormat = "spacedHex";
+                    hexCodeElement.innerHTML = currentHexColor.replace(/#(..)(..)(..)/, "#<span style='color:#FF0000'>$1</span> <span style='color:#00FF00'>$2</span> <span style='color:#0000FF'>$3</span>");
+                } else if (currentFormat === "spacedHex") {
+                    // "#FF FF FF" → "rgb(nn, nn, nn)"
+                    currentFormat = "rgb";
+                    const bigint = parseInt(currentHexColor.slice(1), 16);
+                    const r = (bigint >> 16) & 255;
+                    const g = (bigint >> 8) & 255;
+                    const b = bigint & 255;
+                    hexCodeElement.innerHTML = `<span style='color:#FF0000'>${r}</span> <span style='color:#00FF00'>${g}</span> <span style='color:#0000FF'>${b}</span>`;
+                } else if (currentFormat === "rgb") {
+                    // "rgb(nn, nn, nn)" → "#FFFFFF"
+                    currentFormat = "hex";
+                    hexCodeElement.textContent = currentHexColor;
+                }
+            }, 250);
+            setTimeout(() => {
+                hexCodeElement.style.animation = "none";
+            }, 500);
         }
 
-        // フォーマット変更のロジック
-        function applyFormatChange(hexCodeElement) {
-            if (currentFormat === "hex") {
-                // "#FFFFFF" → "#FF FF FF"
-                currentFormat = "spacedHex";
-                hexCodeElement.innerHTML = currentHexColor.replace(/#(..)(..)(..)/, "#<span style='color:#FF0000'>$1</span> <span style='color:#00FF00'>$2</span> <span style='color:#0000FF'>$3</span>");
-            } else if (currentFormat === "spacedHex") {
-                // "#FF FF FF" → "rgb(nn, nn, nn)"
-                currentFormat = "rgb";
-                const bigint = parseInt(currentHexColor.slice(1), 16);
-                const r = (bigint >> 16) & 255;
-                const g = (bigint >> 8) & 255;
-                const b = bigint & 255;
-                hexCodeElement.innerHTML = `<span style='color:#FF0000'>${r}</span> <span style='color:#00FF00'>${g}</span> <span style='color:#0000FF'>${b}</span>`;
-            } else if (currentFormat === "rgb") {
-                // "rgb(nn, nn, nn)" → "#FFFFFF"
-                currentFormat = "hex";
-                hexCodeElement.textContent = currentHexColor;
-            }
-        }
-
-        // タイトルの拡大・縮小を切り替える関数 (View Transitions APIを使用)
+        // タイトルの拡大・縮小を切り替える関数
         function toggleTitleSize() {
             const titleElement = document.getElementById("title");
-
-            if (!document.startViewTransition) {
-                // View Transitions APIがサポートされていない場合は従来の方法を使用
-                applyTitleSizeToggle(titleElement);
-                return;
-            }
-
-            // View Transitions APIを使用してトランジションを適用
-            document.startViewTransition(() => {
-                applyTitleSizeToggle(titleElement);
-            });
-        }
-
-        // タイトルの拡大・縮小ロジック
-        function applyTitleSizeToggle(titleElement) {
             if (isTitleExpanded) {
-                titleElement.style.transform = "scale(1)"; // 元のサイズに戻す
-                titleElement.style.transformOrigin = "top left"; // 拡大の基準点を左上に設定
+                titleElement.style.animation = "logoSm .5s forwards";
             } else {
-                titleElement.style.transform = "scale(2)"; // 拡大率を大きくする
-                titleElement.style.transformOrigin = "top left"; // 拡大の基準点を左上に設定
+                titleElement.style.animation = "logoBi 1s forwards";
             }
             isTitleExpanded = !isTitleExpanded; // フラグを反転
+        }
+
+        //リフレッシュボタン
+        function refreshButton(){
+            setNewQuestion();
+            const refreshButton = document.getElementById("next-button");
+            refreshButton.style.animation = "RefreshButton 1s";
+            setTimeout(() => {
+                refreshButton.style.animation = "none";
+            }, 1000);
         }
 
         // サービスワーカーの登録
@@ -452,6 +509,6 @@
     <div class="choices">
         <!-- 選択肢のボタン -->
     </div>
-    <img src="img/Refresh.png" id="next-button" onclick="setNewQuestion()" aria-label="次の問題を表示">
+    <img src="img/Refresh.png" id="next-button" onclick="refreshButton()" aria-label="次の問題を表示">
 </body>
 </html>
